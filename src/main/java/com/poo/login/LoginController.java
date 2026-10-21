@@ -13,13 +13,11 @@ public class LoginController {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
-    // Muestra el formulario de inicio de sesión
     @GetMapping("/login")
     public String mostrarFormularioLogin() {
         return "login";
     }
 
-    // Procesa el inicio de sesión
     @PostMapping("/login")
     public String procesarLogin(@RequestParam String username,
                                 @RequestParam String password,
@@ -28,6 +26,7 @@ public class LoginController {
 
         if (usuario != null && usuario.getPassword().equals(password)) {
             model.addAttribute("nombreUsuario", usuario.getUsername());
+            model.addAttribute("rolUsuario", usuario.getRol());
             return "welcome";
         } else {
             model.addAttribute("error", "Usuario o contraseña incorrectos");
@@ -35,29 +34,26 @@ public class LoginController {
         }
     }
 
-    // NUEVO MÉTODO: Registra un nuevo usuario en la base de datos
     @PostMapping("/registrar")
     public String registrarNuevoUsuario(@RequestParam String nuevoUsername,
                                         @RequestParam String nuevoPassword,
+                                        @RequestParam(defaultValue = "USUARIO") String nuevoRol,
                                         @RequestParam String usuarioActual,
                                         Model model) {
 
-        // 1. Verificamos si el nombre ya existe en la base de datos
         if (usuarioRepository.findByUsername(nuevoUsername) != null) {
             model.addAttribute("errorRegistro", "El usuario '" + nuevoUsername + "' ya existe.");
         } else {
-            // 2. Si no existe, creamos el objeto Usuario y lo guardamos
             Usuario nuevo = new Usuario();
             nuevo.setUsername(nuevoUsername);
             nuevo.setPassword(nuevoPassword);
+            nuevo.setRol((nuevoRol != null && !nuevoRol.isBlank()) ? nuevoRol : "USUARIO");
 
-            // Esta línea ejecuta el INSERT INTO en MySQL automáticamente
             usuarioRepository.save(nuevo);
 
-            model.addAttribute("mensajeExito", "¡Usuario '" + nuevoUsername + "' registrado con éxito!");
+            model.addAttribute("mensajeExito", "¡Usuario '" + nuevoUsername + "' registrado con éxito con rol " + nuevo.getRol() + "!");
         }
 
-        // Mantenemos el saludo al usuario actual en la pantalla
         model.addAttribute("nombreUsuario", usuarioActual);
         return "welcome";
     }

@@ -1,92 +1,365 @@
 <!DOCTYPE html>
-<html lang="es">
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Iniciar Sesión</title>
+    <title>Acceso al Sistema | RBAC Cloud</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
     <style>
+        :root {
+            --bg-dark: #07090e;
+            --card-bg: rgba(17, 24, 39, 0.72);
+            --border-glow: rgba(255, 255, 255, 0.08);
+            --primary: #6366f1;
+            --primary-glow: rgba(99, 102, 241, 0.45);
+            --accent: #06b6d4;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --danger: #ef4444;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f6f8;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            margin: 0;
+            overflow: hidden;
+            position: relative;
         }
-        .login-card {
-            background: #ffffff;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            width: 320px;
+
+        /* Esferas de luz animadas en el fondo */
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(90px);
+            z-index: 0;
+            animation: float 10s infinite ease-in-out alternate;
         }
-        .login-card h2 {
-            margin-top: 0;
-            margin-bottom: 20px;
-            text-align: center;
-            color: #333333;
+        .orb-1 {
+            width: 420px; height: 420px;
+            background: radial-gradient(circle, rgba(99,102,241,0.35), transparent 70%);
+            top: -100px; left: -100px;
         }
-        .form-group {
-            margin-bottom: 18px;
+        .orb-2 {
+            width: 380px; height: 380px;
+            background: radial-gradient(circle, rgba(6,182,212,0.3), transparent 70%);
+            bottom: -100px; right: -80px;
+            animation-delay: -5s;
         }
-        .form-group label {
-            display: block;
-            margin-bottom: 6px;
-            color: #555555;
-            font-size: 14px;
+
+        @keyframes float {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(40px, 30px) scale(1.1); }
         }
-        .form-group input {
+
+        /* Malla tecnológica de fondo */
+        .bg-grid {
+            position: absolute;
+            inset: 0;
+            background-image: linear-gradient(to right, rgba(255,255,255,0.02) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(255,255,255,0.02) 1px, transparent 1px);
+            background-size: 40px 40px;
+            z-index: 0;
+        }
+
+        .login-wrapper {
+            position: relative;
+            z-index: 10;
             width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box;
-            font-size: 14px;
+            max-width: 440px;
+            padding: 20px;
         }
+
+        .login-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-glow);
+            border-radius: 24px;
+            padding: 40px 36px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7),
+            0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+            animation: cardEnter 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes cardEnter {
+            from { opacity: 0; transform: translateY(25px) scale(0.97); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .brand-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo-icon {
+            width: 58px; height: 58px;
+            margin: 0 auto 16px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            color: white;
+            box-shadow: 0 10px 25px var(--primary-glow);
+        }
+
+        .brand-header h1 {
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(to right, #ffffff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .brand-header p {
+            color: var(--text-muted);
+            font-size: 13.5px;
+            margin-top: 6px;
+        }
+
+        /* Alerta de error */
+        .error-banner {
+            background: rgba(239, 68, 68, 0.12);
+            border: 1px solid rgba(239, 68, 68, 0.35);
+            color: #fca5a5;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            animation: shake 0.4s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-6px); }
+            75% { transform: translateX(6px); }
+        }
+
+        .input-group {
+            margin-bottom: 18px;
+            position: relative;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 12.5px;
+            font-weight: 600;
+            color: #cbd5e1;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .input-field {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-field i.prefix {
+            position: absolute;
+            left: 16px;
+            color: var(--text-muted);
+            font-size: 18px;
+            transition: color 0.2s;
+        }
+
+        .input-field input {
+            width: 100%;
+            background: rgba(15, 23, 42, 0.75);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-main);
+            padding: 13px 44px;
+            border-radius: 12px;
+            font-size: 14.5px;
+            outline: none;
+            transition: all 0.25s ease;
+        }
+
+        .input-field input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.18);
+            background: rgba(15, 23, 42, 0.95);
+        }
+
+        .input-field input:focus + i.prefix,
+        .input-field:focus-within i.prefix {
+            color: var(--primary);
+        }
+
+        .toggle-pass {
+            position: absolute;
+            right: 14px;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 18px;
+            padding: 4px;
+        }
+        .toggle-pass:hover { color: var(--text-main); }
+
         .btn-submit {
             width: 100%;
-            padding: 10px;
-            background-color: #007bff;
-            color: #ffffff;
+            padding: 14px;
+            margin-top: 8px;
+            background: linear-gradient(135deg, var(--primary), #4f46e5);
+            color: white;
             border: none;
-            border-radius: 4px;
-            font-size: 16px;
-            font-weight: bold;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 700;
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 10px 20px -5px var(--primary-glow);
+            transition: all 0.25s ease;
         }
+
         .btn-submit:hover {
-            background-color: #0056b3;
+            transform: translateY(-2px);
+            box-shadow: 0 15px 25px -5px var(--primary-glow);
+            filter: brightness(1.08);
+        }
+
+        /* Acceso rápido para la demostración */
+        .quick-access {
+            margin-top: 26px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .quick-access span {
+            display: block;
+            text-align: center;
+            font-size: 11.5px;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.7px;
+        }
+
+        .quick-btns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .btn-quick {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #cbd5e1;
+            padding: 9px 10px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .btn-quick:hover {
+            background: rgba(255, 255, 255, 0.09);
+            border-color: rgba(255, 255, 255, 0.2);
+            color: white;
         }
     </style>
 </head>
 <body>
 
-<div class="login-card">
-    <h2>Iniciar Sesión</h2>
-    <form action="/login" method="POST">
-        <div class="form-group">
-            <label for="username">Usuario</label>
-            <input type="text" id="username" name="username" required autocomplete="username">
+<div class="bg-grid"></div>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+
+<div class="login-wrapper">
+    <div class="login-card">
+        <div class="brand-header">
+            <div class="logo-icon">
+                <i class="ri-shield-keyhole-fill"></i>
+            </div>
+            <h1>Nexus RBAC</h1>
+            <p>Control de Acceso Basado en Roles • Spring Boot &amp; JPA</p>
         </div>
 
-        <div class="form-group">
-            <label for="password">Contraseña</label>
-            <input type="password" id="password" name="password" required autocomplete="current-password">
+        <div th:if="${error != null}" class="error-banner">
+            <i class="ri-error-warning-fill" style="font-size: 18px;"></i>
+            <span th:text="${error}">Usuario o contraseña incorrectos</span>
         </div>
 
-        <button type="submit" class="btn-submit">Aceptar</button>
-    </form>
+        <form action="/login" method="post" id="loginForm">
+            <div class="input-group">
+                <label>Identificador de Usuario</label>
+                <div class="input-field">
+                    <input type="text" name="username" id="usernameInput" placeholder="Ej. admin o invitado" required autocomplete="off">
+                    <i class="ri-user-3-line prefix"></i>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>Clave de Seguridad</label>
+                <div class="input-field">
+                    <input type="password" name="password" id="passwordInput" placeholder="••••••••" required>
+                    <i class="ri-lock-password-line prefix"></i>
+                    <button type="button" class="toggle-pass" onclick="togglePassword()" title="Mostrar/Ocultar">
+                        <i class="ri-eye-off-line" id="eyeIcon"></i>
+                    </button>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-submit">
+                <span>Iniciar Sesión Segura</span>
+                <i class="ri-arrow-right-line"></i>
+            </button>
+        </form>
+
+        <div class="quick-access">
+            <span>Autocompletar Credenciales de Prueba</span>
+            <div class="quick-btns">
+                <button type="button" class="btn-quick" onclick="autocompletar('admin', '12345')">
+                    <i class="ri-vip-crown-fill" style="color: #10b981;"></i> Perfil Admin
+                </button>
+                <button type="button" class="btn-quick" onclick="autocompletar('invitado', '12345')">
+                    <i class="ri-user-shared-fill" style="color: #f59e0b;"></i> Perfil Usuario
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
 
-</body>
-</html><!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+<script>
+    function togglePassword() {
+        const input = document.getElementById('passwordInput');
+        const icon = document.getElementById('eyeIcon');
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.className = 'ri-eye-line';
+        } else {
+            input.type = 'password';
+            icon.className = 'ri-eye-off-line';
+        }
+    }
+
+    function autocompletar(user, pass) {
+        document.getElementById('usernameInput').value = user;
+        document.getElementById('passwordInput').value = pass;
+    }
+</script>
 
 </body>
 </html>

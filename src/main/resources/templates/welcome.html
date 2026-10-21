@@ -1,50 +1,1102 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Panel de Usuario</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus RBAC | Panel de Control</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
     <style>
-        body { font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; background-color: #f0f2f5; }
-        .card { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); width: 340px; text-align: center; }
-        input { width: 90%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        button { width: 90%; padding: 10px; background-color: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 15px; font-weight: bold; margin-top: 8px; }
-        button:hover { background-color: #218838; }
-        .btn-login { margin-top: 15px; display: inline-block; padding: 10px 15px; background-color: #007bff; color: white; text-decoration: none; border-radius: 4px; font-size: 14px; }
-        .btn-login:hover { background-color: #0056b3; }
-        .exito { color: #28a745; font-size: 14px; margin-bottom: 8px; font-weight: bold; }
-        .error { color: #dc3545; font-size: 14px; margin-bottom: 8px; font-weight: bold; }
-        hr { margin: 20px 0; border: none; border-top: 1px solid #eee; }
+        :root {
+            --bg-main: #07090e;
+            --bg-panel: #0f1420;
+            --bg-card: rgba(22, 30, 46, 0.7);
+            --border: rgba(255, 255, 255, 0.07);
+            --primary: #6366f1;
+            --accent-purple: #8b5cf6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            display: flex;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* ================= SIDEBAR ================= */
+        .sidebar {
+            width: 260px;
+            background: var(--bg-panel);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 24px 18px;
+            position: fixed;
+            height: 100vh;
+            z-index: 20;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0 10px 24px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .brand-logo {
+            width: 40px; height: 40px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--primary), #06b6d4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: white;
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+        }
+
+        .brand-text h2 { font-size: 17px; font-weight: 800; letter-spacing: -0.3px; }
+        .brand-text span { font-size: 11px; color: var(--text-muted); }
+
+        .nav-section { margin-top: 24px; flex: 1; }
+        .nav-label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #64748b;
+            padding: 0 12px;
+            margin-bottom: 10px;
+            letter-spacing: 0.8px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 11px 14px;
+            border-radius: 10px;
+            color: var(--text-muted);
+            font-size: 13.5px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background: rgba(99, 102, 241, 0.12);
+            color: #fff;
+        }
+        .nav-item.active i { color: var(--primary); }
+
+        .user-box {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border);
+            padding: 14px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .user-info { display: flex; align-items: center; gap: 10px; }
+        .avatar {
+            width: 36px; height: 36px;
+            border-radius: 10px;
+            background: #1e293b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: #38bdf8;
+        }
+
+        .btn-logout {
+            color: #f87171;
+            text-decoration: none;
+            font-size: 18px;
+            padding: 6px;
+            border-radius: 8px;
+            transition: background 0.2s;
+        }
+        .btn-logout:hover { background: rgba(239, 68, 68, 0.15); }
+
+        /* ================= MAIN CONTENT ================= */
+        .main-wrapper {
+            flex: 1;
+            margin-left: 260px;
+            padding: 28px 34px;
+        }
+
+        /* Top Header */
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 28px;
+            background: var(--bg-card);
+            backdrop-filter: blur(12px);
+            padding: 16px 24px;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+        }
+
+        .topbar-left h1 { font-size: 20px; font-weight: 800; }
+        .topbar-left p { font-size: 12.5px; color: var(--text-muted); margin-top: 2px; }
+
+        .topbar-right { display: flex; align-items: center; gap: 14px; }
+
+        .role-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+        .role-admin {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.35);
+        }
+        .role-user {
+            background: rgba(245, 158, 11, 0.15);
+            color: #fbbf24;
+            border: 1px solid rgba(245, 158, 11, 0.35);
+        }
+
+        .switcher-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #0b0f19;
+            padding: 6px 12px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+        }
+        .switcher-box span { font-size: 12px; color: var(--text-muted); font-weight: 600; }
+        .switcher-select {
+            background: transparent;
+            color: white;
+            border: none;
+            font-size: 12.5px;
+            font-weight: 700;
+            cursor: pointer;
+            outline: none;
+        }
+        .switcher-select option { background: #0f172a; color: white; }
+
+        /* KPI Cards */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+            margin-bottom: 26px;
+        }
+
+        .kpi-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: transform 0.2s;
+        }
+        .kpi-card:hover { transform: translateY(-3px); }
+
+        .kpi-info span { font-size: 12px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; }
+        .kpi-info h3 { font-size: 24px; font-weight: 800; margin-top: 6px; }
+        .kpi-icon {
+            width: 48px; height: 48px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+        }
+
+        /* Modules Grid */
+        .modules-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 26px;
+        }
+
+        @media (max-width: 1150px) {
+            .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+            .modules-grid { grid-template-columns: 1fr; }
+        }
+
+        .module-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .module-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 16px;
+            margin-bottom: 18px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .module-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        /* Forms */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .full-width { grid-column: span 2; }
+
+        .field label {
+            display: block;
+            font-size: 11.5px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+        }
+
+        .field input, .field select {
+            width: 100%;
+            background: rgba(11, 15, 25, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 10px 12px;
+            border-radius: 10px;
+            font-size: 13.5px;
+            outline: none;
+            transition: border 0.2s;
+        }
+        .field input:focus, .field select:focus {
+            border-color: var(--primary);
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 14px;
+        }
+
+        .btn {
+            padding: 10px 16px;
+            border-radius: 10px;
+            border: none;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), #4f46e5);
+            color: white;
+            flex: 1;
+        }
+        .btn-purple {
+            background: linear-gradient(135deg, var(--accent-purple), #6d28d9);
+            color: white;
+            flex: 1;
+        }
+        .btn-secondary {
+            background: rgba(255,255,255,0.08);
+            color: var(--text-main);
+            display: none;
+        }
+        .btn:hover { filter: brightness(1.12); transform: translateY(-1px); }
+
+        /* Search & Tables */
+        .table-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 22px 0 12px;
+        }
+        .table-toolbar h4 { font-size: 13.5px; color: #cbd5e1; }
+
+        .search-box {
+            position: relative;
+            width: 200px;
+        }
+        .search-box i {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+        .search-box input {
+            width: 100%;
+            background: rgba(11, 15, 25, 0.7);
+            border: 1px solid var(--border);
+            color: white;
+            padding: 6px 10px 6px 30px;
+            border-radius: 8px;
+            font-size: 12px;
+            outline: none;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            max-height: 270px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        th {
+            background: #0b0f19;
+            color: var(--text-muted);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            padding: 11px 12px;
+            text-align: left;
+            position: sticky;
+            top: 0;
+        }
+
+        td {
+            padding: 11px 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            color: #e2e8f0;
+        }
+
+        tr:hover td { background: rgba(255, 255, 255, 0.02); }
+
+        .action-btns { display: flex; gap: 6px; }
+        .btn-icon {
+            width: 30px; height: 30px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            transition: 0.2s;
+        }
+        .btn-edit { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+        .btn-edit:hover { background: #f59e0b; color: #000; }
+        .btn-del { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+        .btn-del:hover { background: #ef4444; color: #fff; }
+
+        /* Lock Box for USUARIO Role */
+        .restricted-box {
+            margin-top: 18px;
+            background: rgba(245, 158, 11, 0.07);
+            border: 1px dashed rgba(245, 158, 11, 0.35);
+            border-radius: 14px;
+            padding: 22px;
+            text-align: center;
+        }
+        .restricted-box i.lock-icon {
+            font-size: 32px;
+            color: var(--warning);
+            display: block;
+            margin-bottom: 8px;
+        }
+        .restricted-box h4 { font-size: 15px; color: #fde68a; margin-bottom: 6px; }
+        .restricted-box p { font-size: 12.5px; color: var(--text-muted); line-height: 1.5; margin-bottom: 14px; }
+
+        .btn-test-403 {
+            background: rgba(245, 158, 11, 0.18);
+            border: 1px solid rgba(245, 158, 11, 0.4);
+            color: #fcd34d;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-test-403:hover { background: var(--warning); color: #000; }
+
+        /* ================= LIVE TERMINAL (AUDITORÍA RBAC) ================= */
+        .terminal-card {
+            background: #05070b;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+        .terminal-header {
+            background: #0f1420;
+            padding: 10px 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+        }
+        .terminal-dots { display: flex; gap: 6px; align-items: center; }
+        .dot { width: 10px; height: 10px; border-radius: 50%; }
+        .dot-r { background: #ef4444; }
+        .dot-y { background: #f59e0b; }
+        .dot-g { background: #10b981; }
+        .terminal-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-left: 10px;
+        }
+        .terminal-body {
+            padding: 14px 18px;
+            max-height: 150px;
+            overflow-y: auto;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+        }
+        .log-line { margin-bottom: 6px; display: flex; gap: 10px; }
+        .log-time { color: #64748b; }
+        .log-ok { color: #34d399; font-weight: 600; }
+        .log-err { color: #f87171; font-weight: 600; }
+
+        /* Toast Notifications */
+        #toastContainer {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .toast {
+            background: #1e293b;
+            border-left: 4px solid var(--success);
+            color: white;
+            padding: 14px 18px;
+            border-radius: 10px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            animation: slideIn 0.3s ease;
+        }
+        .toast.error { border-left-color: var(--danger); }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(40px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <h2>¡Hola, <span th:text="${nombreUsuario}">Usuario</span>!</h2>
-    <p>Has iniciado sesión correctamente.</p>
-
-    <hr>
-
-    <h3>Agregar otro usuario</h3>
-
-    <div th:if="${mensajeExito != null}">
-        <p class="exito" th:text="${mensajeExito}"></p>
-    </div>
-    <div th:if="${errorRegistro != null}">
-        <p class="error" th:text="${errorRegistro}"></p>
+<!-- ================= SIDEBAR ================= -->
+<aside class="sidebar">
+    <div class="brand">
+        <div class="brand-logo"><i class="ri-radar-fill"></i></div>
+        <div class="brand-text">
+            <h2>Nexus RBAC</h2>
+            <span>Spring Boot 3 + JPA</span>
+        </div>
     </div>
 
-    <form action="/registrar" method="post">
-        <input type="hidden" name="usuarioActual" th:value="${nombreUsuario}">
+    <div class="nav-section">
+        <div class="nav-label">Módulos Activos</div>
+        <a class="nav-item active"><i class="ri-dashboard-3-line"></i> Centro de Control</a>
+        <a class="nav-item" onclick="probarBloqueoSeguridad('/api/usuarios', 'GET')"><i class="ri-team-line"></i> API Usuarios (JSON)</a>
+        <a class="nav-item" onclick="probarBloqueoSeguridad('/api/productos', 'GET')"><i class="ri-box-3-line"></i> API Productos (JSON)</a>
 
-        <input type="text" name="nuevoUsername" placeholder="Nuevo nombre de usuario" required>
-        <input type="password" name="nuevoPassword" placeholder="Nueva contraseña" required>
-        <button type="submit">Guardar en Base de Datos</button>
-    </form>
+        <div class="nav-label" style="margin-top: 24px;">Pruebas de Seguridad</div>
+        <a class="nav-item" onclick="simularAtaqueRol()"><i class="ri-shield-flash-line"></i> Auditar Permisos RBAC</a>
+    </div>
 
-    <hr>
+    <div class="user-box">
+        <div class="user-info">
+            <div class="avatar"><i class="ri-user-star-line"></i></div>
+            <div>
+                <div style="font-size: 13px; font-weight: 700;" th:text="${nombreUsuario != null ? nombreUsuario : 'admin'}">admin</div>
+                <div style="font-size: 11px; color: var(--text-muted);">Sesión Activa</div>
+            </div>
+        </div>
+        <a href="/login" class="btn-logout" title="Cerrar Sesión"><i class="ri-logout-box-r-line"></i></a>
+    </div>
+</aside>
 
-    <a href="/login" class="btn-login">Cerrar sesión / Probar nuevo usuario</a>
-</div>
+<!-- ================= CONTENIDO PRINCIPAL ================= -->
+<main class="main-wrapper">
+
+    <!-- Barra Superior -->
+    <header class="topbar">
+        <div class="topbar-left">
+            <h1>Panel de Gestión de Catálogos</h1>
+            <p>Control de acceso dinámico mediante <code>SeguridadRolesFilter</code></p>
+        </div>
+
+        <div class="topbar-right">
+            <span id="badgeRol" class="role-pill role-admin">
+                <i class="ri-shield-check-fill"></i>
+                <span id="textoRolBadge" th:text="${rolUsuario != null ? rolUsuario : 'ADMINISTRADOR'}">ADMINISTRADOR</span>
+            </span>
+
+            <div class="switcher-box">
+                <span>Simular Rol:</span>
+                <select id="selectorRol" class="switcher-select" onchange="cambiarRolEnVivo()">
+                    <option value="ADMINISTRADOR">ADMINISTRADOR (Total)</option>
+                    <option value="USUARIO">USUARIO (Restringido)</option>
+                </select>
+            </div>
+        </div>
+    </header>
+
+    <!-- Indicadores Clave (KPIs) -->
+    <section class="kpi-grid">
+        <div class="kpi-card">
+            <div class="kpi-info">
+                <span>Usuarios Registrados</span>
+                <h3 id="kpiUsuarios">0</h3>
+            </div>
+            <div class="kpi-icon" style="background: rgba(99,102,241,0.15); color: #818cf8;">
+                <i class="ri-group-fill"></i>
+            </div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-info">
+                <span>Productos en Catálogo</span>
+                <h3 id="kpiProductos">0</h3>
+            </div>
+            <div class="kpi-icon" style="background: rgba(139,92,246,0.15); color: #a78bfa;">
+                <i class="ri-archive-drawer-fill"></i>
+            </div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-info">
+                <span>Valor del Inventario</span>
+                <h3 id="kpiValor">$0.00</h3>
+            </div>
+            <div class="kpi-icon" style="background: rgba(16,185,129,0.15); color: #34d399;">
+                <i class="ri-money-dollar-circle-fill"></i>
+            </div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-info">
+                <span>Permisos Activos</span>
+                <h3 id="kpiNivelAcceso" style="font-size: 16px;">CRUD Total</h3>
+            </div>
+            <div class="kpi-icon" style="background: rgba(6,182,212,0.15); color: #22d3ee;">
+                <i class="ri-key-2-fill"></i>
+            </div>
+        </div>
+    </section>
+
+    <!-- Módulos de Herramientas -->
+    <section class="modules-grid">
+
+        <!-- ==================== MÓDULO 1: USUARIOS ==================== -->
+        <div class="module-card">
+            <div class="module-header">
+                <div class="module-title">
+                    <i class="ri-user-settings-fill" style="color: var(--primary); font-size: 20px;"></i>
+                    <span id="tituloFormUsuario">Catálogo de Usuarios</span>
+                </div>
+                <span style="font-size: 11px; color: var(--text-muted);">Endpoint: <code>/api/usuarios</code></span>
+            </div>
+
+            <form id="formUsuario" onsubmit="guardarUsuario(event)">
+                <input type="hidden" id="usuarioId">
+                <div class="form-grid">
+                    <div class="field">
+                        <label>Username</label>
+                        <input type="text" id="username" placeholder="Ej. carlos_dev" required>
+                    </div>
+                    <div class="field">
+                        <label>Password</label>
+                        <input type="password" id="password" placeholder="••••••••" required>
+                    </div>
+                    <div class="field full-width">
+                        <label>Nivel de Rol</label>
+                        <select id="rol">
+                            <option value="USUARIO">USUARIO (Solo alta de usuarios)</option>
+                            <option value="ADMINISTRADOR">ADMINISTRADOR (Control total CRUD)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary" id="btnSubmitUsuario">
+                        <i class="ri-user-add-line"></i> <span>Registrar Usuario</span>
+                    </button>
+                    <button type="button" class="btn btn-secondary" id="btnCancelarUsuario" onclick="limpiarFormularioUsuario()">
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+
+            <!-- Tabla de Usuarios (Solo ADMINISTRADOR) -->
+            <div id="seccionTablaUsuarios">
+                <div class="table-toolbar">
+                    <h4>Registros en Base de Datos</h4>
+                    <div class="search-box">
+                        <i class="ri-search-line"></i>
+                        <input type="text" id="buscarUsuario" placeholder="Filtrar usuario..." oninput="renderizarTablaUsuarios()">
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Usuario</th>
+                            <th>Clave</th>
+                            <th>Rol</th>
+                            <th>Acciones</th>
+                        </tr>
+                        </thead>
+                        <tbody id="tablaUsuariosBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Bloqueo de lectura para rol USUARIO -->
+            <div id="avisoUsuarioLectura" class="restricted-box" style="display: none;">
+                <i class="ri-shield-user-line lock-icon"></i>
+                <h4>Modo Captura Activo (Rol USUARIO)</h4>
+                <p>Tu perfil permite <strong>agregar nuevos registros (POST)</strong> en este catálogo, pero tiene restringida la consulta, edición y baja de usuarios.</p>
+                <button type="button" class="btn-test-403" onclick="probarBloqueoSeguridad('/api/usuarios', 'GET')">
+                    <i class="ri-terminal-box-line"></i> Forzar GET /api/usuarios (Demostrar 403)
+                </button>
+            </div>
+        </div>
+
+        <!-- ==================== MÓDULO 2: PRODUCTOS ==================== -->
+        <div class="module-card">
+            <div class="module-header">
+                <div class="module-title">
+                    <i class="ri-shopping-bag-3-fill" style="color: var(--accent-purple); font-size: 20px;"></i>
+                    <span id="tituloFormProducto">Catálogo de Productos</span>
+                </div>
+                <span style="font-size: 11px; color: var(--text-muted);">Endpoint: <code>/api/productos</code></span>
+            </div>
+
+            <!-- Vista completa para ADMINISTRADOR -->
+            <div id="seccionAdminProductos">
+                <form id="formProducto" onsubmit="guardarProducto(event)">
+                    <input type="hidden" id="productoId">
+                    <div class="form-grid">
+                        <div class="field full-width">
+                            <label>Nombre del Producto</label>
+                            <input type="text" id="nombreProducto" placeholder="Ej. Teclado Mecánico RGB" required>
+                        </div>
+                        <div class="field">
+                            <label>Precio Unitario ($)</label>
+                            <input type="number" step="0.01" id="precioProducto" placeholder="1450.00" required>
+                        </div>
+                        <div class="field">
+                            <label>Unidades en Stock</label>
+                            <input type="number" id="stockProducto" placeholder="20" required>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-purple" id="btnSubmitProducto">
+                            <i class="ri-save-3-line"></i> <span>Guardar Producto</span>
+                        </button>
+                        <button type="button" class="btn btn-secondary" id="btnCancelarProducto" onclick="limpiarFormularioProducto()">
+                            Cancelar
+                        </button>
+                    </div>
+                </form>
+
+                <div class="table-toolbar">
+                    <h4>Inventario Activo</h4>
+                    <div class="search-box">
+                        <i class="ri-search-line"></i>
+                        <input type="text" id="buscarProducto" placeholder="Filtrar producto..." oninput="renderizarTablaProductos()">
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Producto</th>
+                            <th>Precio</th>
+                            <th>Stock</th>
+                            <th>Acciones</th>
+                        </tr>
+                        </thead>
+                        <tbody id="tablaProductosBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Vista restringida para rol USUARIO -->
+            <div id="avisoProductosRestringido" class="restricted-box" style="display: none; margin-top: auto; margin-bottom: auto;">
+                <i class="ri-lock-2-fill lock-icon"></i>
+                <h4>Acceso Restringido al Catálogo de Productos</h4>
+                <p>El módulo de inventario requiere privilegios de <strong>ADMINISTRADOR</strong>. Todas las operaciones (Crear, Consultar, Actualizar y Eliminar) están protegidas por el filtro RBAC.</p>
+                <button type="button" class="btn-test-403" onclick="probarBloqueoSeguridad('/api/productos', 'GET')">
+                    <i class="ri-alarm-warning-line"></i> Intentar Acceso a Productos (Ver Error 403)
+                </button>
+            </div>
+        </div>
+
+    </section>
+
+    <!-- Consola de Auditoría HTTP en Vivo -->
+    <section class="terminal-card">
+        <div class="terminal-header">
+            <div class="terminal-dots">
+                <span class="dot dot-r"></span>
+                <span class="dot dot-y"></span>
+                <span class="dot dot-g"></span>
+                <span class="terminal-title">Consola de Auditoría RBAC — Tráfico HTTP en Tiempo Real</span>
+            </div>
+            <button onclick="limpiarConsola()" style="background:none; border:none; color:#94a3b8; font-size:11px; cursor:pointer;">Limpiar Log</button>
+        </div>
+        <div class="terminal-body" id="terminalLogs"></div>
+    </section>
+
+</main>
+
+<div id="toastContainer"></div>
+
+<script th:inline="javascript">
+    let rolActual = /*[[${rolUsuario != null ? rolUsuario : 'ADMINISTRADOR'}]]*/ 'ADMINISTRADOR';
+    rolActual = rolActual.toUpperCase().trim();
+
+    let cacheUsuarios = [];
+    let cacheProductos = [];
+
+    document.addEventListener("DOMContentLoaded", () => {
+        document.getElementById("selectorRol").value = rolActual;
+        registrarLog("SISTEMA", `Sesión iniciada con perfil [${rolActual}]`, true);
+        aplicarInterfazSegunRol();
+    });
+
+    function cambiarRolEnVivo() {
+        rolActual = document.getElementById("selectorRol").value;
+        mostrarToast(`Cambiado al perfil: ${rolActual}`, true);
+        registrarLog("RBAC-SWITCH", `Cambio dinámico de rol a [${rolActual}]`, true);
+        aplicarInterfazSegunRol();
+    }
+
+    function aplicarInterfazSegunRol() {
+        const badge = document.getElementById("badgeRol");
+        const textoBadge = document.getElementById("textoRolBadge");
+        textoBadge.textContent = rolActual;
+        badge.className = rolActual === "ADMINISTRADOR" ? "role-pill role-admin" : "role-pill role-user";
+
+        limpiarFormularioUsuario();
+        limpiarFormularioProducto();
+
+        if (rolActual === "ADMINISTRADOR") {
+            document.getElementById("seccionTablaUsuarios").style.display = "block";
+            document.getElementById("avisoUsuarioLectura").style.display = "none";
+            document.getElementById("seccionAdminProductos").style.display = "block";
+            document.getElementById("avisoProductosRestringido").style.display = "none";
+            document.getElementById("kpiNivelAcceso").textContent = "CRUD Total";
+            cargarUsuarios();
+            cargarProductos();
+        } else {
+            document.getElementById("seccionTablaUsuarios").style.display = "none";
+            document.getElementById("avisoUsuarioLectura").style.display = "block";
+            document.getElementById("seccionAdminProductos").style.display = "none";
+            document.getElementById("avisoProductosRestringido").style.display = "block";
+            document.getElementById("kpiUsuarios").textContent = "Protegido";
+            document.getElementById("kpiProductos").textContent = "Bloqueado";
+            document.getElementById("kpiValor").textContent = "Bloqueado";
+            document.getElementById("kpiNivelAcceso").textContent = "Solo Alta (POST)";
+        }
+    }
+
+    function mostrarToast(mensaje, esExito) {
+        const cont = document.getElementById("toastContainer");
+        const toast = document.createElement("div");
+        toast.className = esExito ? "toast" : "toast error";
+        toast.innerHTML = `<i class="${esExito ? 'ri-checkbox-circle-fill' : 'ri-error-warning-fill'}" style="font-size:18px;"></i> <span>${mensaje}</span>`;
+        cont.appendChild(toast);
+        setTimeout(() => toast.remove(), 4000);
+    }
+
+    function registrarLog(metodo, detalle, ok) {
+        const term = document.getElementById("terminalLogs");
+        const hora = new Date().toLocaleTimeString();
+        const linea = document.createElement("div");
+        linea.className = "log-line";
+        linea.innerHTML = `
+            <span class="log-time">[${hora}]</span>
+            <span class="${ok ? 'log-ok' : 'log-err'}">[${metodo}]</span>
+            <span>${detalle}</span>
+        `;
+        term.prepend(linea);
+    }
+
+    function limpiarConsola() {
+        document.getElementById("terminalLogs").innerHTML = "";
+    }
+
+    // ==================== GESTIÓN DE USUARIOS ====================
+
+    async function cargarUsuarios() {
+        const url = `/api/usuarios?rol=${rolActual}`;
+        const res = await fetch(url);
+        if (!res.ok) return;
+        cacheUsuarios = await res.json();
+        document.getElementById("kpiUsuarios").textContent = cacheUsuarios.length;
+        registrarLog("GET 200", `${url} -> ${cacheUsuarios.length} usuarios cargados`, true);
+        renderizarTablaUsuarios();
+    }
+
+    function renderizarTablaUsuarios() {
+        const filtro = document.getElementById("buscarUsuario").value.toLowerCase();
+        const tbody = document.getElementById("tablaUsuariosBody");
+        tbody.innerHTML = "";
+
+        cacheUsuarios
+            .filter(u => u.username.toLowerCase().includes(filtro) || u.rol.toLowerCase().includes(filtro))
+            .forEach(u => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>#${u.id}</td>
+                        <td><strong>${u.username}</strong></td>
+                        <td><code>${u.password}</code></td>
+                        <td><span class="role-pill ${u.rol === 'ADMINISTRADOR' ? 'role-admin' : 'role-user'}" style="font-size:10px; padding:3px 8px;">${u.rol}</span></td>
+                        <td class="action-btns">
+                            <button class="btn-icon btn-edit" onclick="seleccionarUsuarioEditar(${u.id})" title="Editar"><i class="ri-edit-2-line"></i></button>
+                            <button class="btn-icon btn-del" onclick="eliminarUsuario(${u.id})" title="Eliminar"><i class="ri-delete-bin-6-line"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+    }
+
+    async function guardarUsuario(e) {
+        e.preventDefault();
+        const id = document.getElementById("usuarioId").value;
+        const datos = {
+            username: document.getElementById("username").value,
+            password: document.getElementById("password").value,
+            rol: document.getElementById("rol").value
+        };
+
+        const esEdicion = id !== "";
+        const url = esEdicion ? `/api/usuarios/${id}?rol=${rolActual}` : `/api/usuarios?rol=${rolActual}`;
+        const metodo = esEdicion ? "PUT" : "POST";
+
+        const res = await fetch(url, {
+            method: metodo,
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(datos)
+        });
+
+        if (res.ok) {
+            mostrarToast(esEdicion ? "Usuario actualizado con éxito" : "Nuevo usuario registrado en MySQL", true);
+            registrarLog(`${metodo} ${res.status}`, `${url} -> Usuario '${datos.username}' guardado`, true);
+            limpiarFormularioUsuario();
+            if (rolActual === "ADMINISTRADOR") cargarUsuarios();
+        } else {
+            const err = await res.json();
+            mostrarToast(err.error || "Error al guardar usuario", false);
+            registrarLog(`${metodo} ${res.status}`, `${url} -> ${err.error}`, false);
+        }
+    }
+
+    function seleccionarUsuarioEditar(id) {
+        const u = cacheUsuarios.find(item => item.id === id);
+        if (!u) return;
+        document.getElementById("usuarioId").value = u.id;
+        document.getElementById("username").value = u.username;
+        document.getElementById("password").value = u.password;
+        document.getElementById("rol").value = u.rol;
+        document.getElementById("tituloFormUsuario").textContent = "Editando Usuario #" + u.id;
+        document.getElementById("btnSubmitUsuario").innerHTML = `<i class="ri-refresh-line"></i> <span>Actualizar Usuario</span>`;
+        document.getElementById("btnCancelarUsuario").style.display = "inline-flex";
+    }
+
+    function limpiarFormularioUsuario() {
+        document.getElementById("formUsuario").reset();
+        document.getElementById("usuarioId").value = "";
+        document.getElementById("tituloFormUsuario").textContent = "Catálogo de Usuarios";
+        document.getElementById("btnSubmitUsuario").innerHTML = `<i class="ri-user-add-line"></i> <span>Registrar Usuario</span>`;
+        document.getElementById("btnCancelarUsuario").style.display = "none";
+    }
+
+    async function eliminarUsuario(id) {
+        if (!confirm("¿Confirmas eliminar el usuario #" + id + "?")) return;
+        const url = `/api/usuarios/${id}?rol=${rolActual}`;
+        const res = await fetch(url, { method: "DELETE" });
+        if (res.ok) {
+            mostrarToast("Usuario eliminado de la base de datos", true);
+            registrarLog("DELETE 200", `${url} -> Eliminado correctamente`, true);
+            cargarUsuarios();
+        } else {
+            const err = await res.json();
+            mostrarToast(err.error || "Error al eliminar", false);
+            registrarLog(`DELETE ${res.status}`, `${url} -> Denegado`, false);
+        }
+    }
+
+    // ==================== GESTIÓN DE PRODUCTOS ====================
+
+    async function cargarProductos() {
+        const url = `/api/productos?rol=${rolActual}`;
+        const res = await fetch(url);
+        if (!res.ok) return;
+        cacheProductos = await res.json();
+        document.getElementById("kpiProductos").textContent = cacheProductos.length;
+
+        const valorTotal = cacheProductos.reduce((acc, p) => acc + (p.precio * p.stock), 0);
+        document.getElementById("kpiValor").textContent = "$" + valorTotal.toLocaleString('es-MX', { minimumFractionDigits: 2 });
+
+        registrarLog("GET 200", `${url} -> ${cacheProductos.length} productos en inventario`, true);
+        renderizarTablaProductos();
+    }
+
+    function renderizarTablaProductos() {
+        const filtro = document.getElementById("buscarProducto").value.toLowerCase();
+        const tbody = document.getElementById("tablaProductosBody");
+        tbody.innerHTML = "";
+
+        cacheProductos
+            .filter(p => p.nombre.toLowerCase().includes(filtro))
+            .forEach(p => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>#${p.id}</td>
+                        <td><strong>${p.nombre}</strong></td>
+                        <td style="color:#34d399; font-weight:700;">$${p.precio.toFixed(2)}</td>
+                        <td>${p.stock} uds.</td>
+                        <td class="action-btns">
+                            <button class="btn-icon btn-edit" onclick="seleccionarProductoEditar(${p.id})" title="Editar"><i class="ri-edit-2-line"></i></button>
+                            <button class="btn-icon btn-del" onclick="eliminarProducto(${p.id})" title="Eliminar"><i class="ri-delete-bin-6-line"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+    }
+
+    async function guardarProducto(e) {
+        e.preventDefault();
+        const id = document.getElementById("productoId").value;
+        const datos = {
+            nombre: document.getElementById("nombreProducto").value,
+            precio: parseFloat(document.getElementById("precioProducto").value),
+            stock: parseInt(document.getElementById("stockProducto").value)
+        };
+
+        const esEdicion = id !== "";
+        const url = esEdicion ? `/api/productos/${id}?rol=${rolActual}` : `/api/productos?rol=${rolActual}`;
+        const metodo = esEdicion ? "PUT" : "POST";
+
+        const res = await fetch(url, {
+            method: metodo,
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(datos)
+        });
+
+        if (res.ok) {
+            mostrarToast(esEdicion ? "Producto actualizado" : "Producto agregado al inventario", true);
+            registrarLog(`${metodo} ${res.status}`, `${url} -> Producto '${datos.nombre}' guardado`, true);
+            limpiarFormularioProducto();
+            cargarProductos();
+        } else {
+            const err = await res.json();
+            mostrarToast(err.error || "Error al guardar producto", false);
+            registrarLog(`${metodo} ${res.status}`, `${url} -> ${err.error}`, false);
+        }
+    }
+
+    function seleccionarProductoEditar(id) {
+        const p = cacheProductos.find(item => item.id === id);
+        if (!p) return;
+        document.getElementById("productoId").value = p.id;
+        document.getElementById("nombreProducto").value = p.nombre;
+        document.getElementById("precioProducto").value = p.precio;
+        document.getElementById("stockProducto").value = p.stock;
+        document.getElementById("tituloFormProducto").textContent = "Editando Producto #" + p.id;
+        document.getElementById("btnSubmitProducto").innerHTML = `<i class="ri-refresh-line"></i> <span>Actualizar Producto</span>`;
+        document.getElementById("btnCancelarProducto").style.display = "inline-flex";
+    }
+
+    function limpiarFormularioProducto() {
+        document.getElementById("formProducto").reset();
+        document.getElementById("productoId").value = "";
+        document.getElementById("tituloFormProducto").textContent = "Catálogo de Productos";
+        document.getElementById("btnSubmitProducto").innerHTML = `<i class="ri-save-3-line"></i> <span>Guardar Producto</span>`;
+        document.getElementById("btnCancelarProducto").style.display = "none";
+    }
+
+    async function eliminarProducto(id) {
+        if (!confirm("¿Confirmas eliminar el producto #" + id + "?")) return;
+        const url = `/api/productos/${id}?rol=${rolActual}`;
+        const res = await fetch(url, { method: "DELETE" });
+        if (res.ok) {
+            mostrarToast("Producto eliminado del inventario", true);
+            registrarLog("DELETE 200", `${url} -> Producto eliminado`, true);
+            cargarProductos();
+        } else {
+            const err = await res.json();
+            mostrarToast(err.error || "No se pudo eliminar", false);
+            registrarLog(`DELETE ${res.status}`, `${url} -> Denegado`, false);
+        }
+    }
+
+    // ==================== AUDITORÍA DE SEGURIDAD ====================
+
+    async function probarBloqueoSeguridad(endpoint, metodo = 'GET') {
+        const url = `${endpoint}?rol=${rolActual}`;
+        const res = await fetch(url, { method: metodo });
+        if (res.ok) {
+            mostrarToast(`Acceso autorizado (200 OK) a ${endpoint} como ${rolActual}`, true);
+            registrarLog(`${metodo} 200`, `${url} -> Acceso concedido`, true);
+        } else {
+            const data = await res.json();
+            mostrarToast(data.error, false);
+            registrarLog(`${metodo} ${res.status}`, `${url} -> BLOQUEADO: ${data.error}`, false);
+        }
+    }
+
+    async function simularAtaqueRol() {
+        await probarBloqueoSeguridad('/api/productos', 'GET');
+        await probarBloqueoSeguridad('/api/usuarios', 'GET');
+    }
+</script>
 
 </body>
 </html>
